@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -39,6 +41,56 @@ public class Utils {
 
 	public static BufferedImage setImageTwo(String pathTwo) {
 		return getImage(pathTwo);
+	}
+	
+	// 图片大小不同时设置大小
+	public static List<BufferedImage> setPicSize(BufferedImage targetTop, BufferedImage targetBottom) {
+		int topWidth = targetTop.getWidth(), topHeight = targetTop.getHeight();
+		int bottomWidth = targetBottom.getWidth(), bottomHeight = targetBottom.getHeight();
+		int width = 0, height = 0;
+		width = topWidth - bottomWidth;
+		height = topHeight - bottomHeight;
+		List<BufferedImage> targetList = new ArrayList<>();
+		if (width > 0 && height > 0) {
+			BufferedImage result = new BufferedImage(targetBottom.getWidth() + width, targetBottom.getHeight() + height,
+					BufferedImage.TYPE_INT_ARGB);
+			targetList.add(null);
+			targetList.add(setPicHelper(targetBottom, result, targetBottom.getWidth() + width, targetBottom.getHeight() + height));
+		} else if (width < 0 && height < 0) {
+			BufferedImage result = new BufferedImage(targetTop.getWidth() - width, targetTop.getHeight() - height,
+					BufferedImage.TYPE_INT_ARGB);
+			targetList.add(setPicHelper(targetTop, result, targetTop.getWidth() - width, targetTop.getHeight() - height));
+			targetList.add(null);
+		} else if (width > 0 && height < 0) {
+			BufferedImage resultBottom = new BufferedImage(targetBottom.getWidth() + width, targetBottom.getHeight(),
+					BufferedImage.TYPE_INT_ARGB);
+			BufferedImage resultTop = new BufferedImage(targetTop.getWidth(), targetTop.getHeight() - height,
+					BufferedImage.TYPE_INT_ARGB);
+			targetList.add(setPicHelper(targetTop, resultTop, targetTop.getWidth(), targetTop.getHeight() - height));
+			targetList.add(setPicHelper(targetBottom, resultBottom, targetBottom.getWidth() + width, targetBottom.getHeight()));
+		} else if (width < 0 && height > 0) {
+			BufferedImage resultBottom = new BufferedImage(targetBottom.getWidth(), targetBottom.getHeight() + height,
+					BufferedImage.TYPE_INT_ARGB);
+			BufferedImage resultTop = new BufferedImage(targetTop.getWidth() - width, targetTop.getHeight(),
+					BufferedImage.TYPE_INT_ARGB);
+			targetList.add(setPicHelper(targetTop, resultTop, targetTop.getWidth() - width, targetTop.getHeight()));
+			targetList.add(setPicHelper(targetBottom, resultBottom, targetBottom.getWidth(), targetBottom.getHeight() + height));
+		}
+		return targetList;
+	}
+	
+	private static BufferedImage setPicHelper(BufferedImage src, BufferedImage result, int width, int height) {
+		int[] targetPixels = new int[width * height];
+		getBitmapPixelColor(src, new PixelColorHandler() {
+
+			@Override
+			public void onHandle(int x, int y, int a, int r, int g, int b) {
+				// TODO Auto-generated method stub
+				targetPixels[x + y * width] = getIntFromColor(a, r, g, b);
+			}
+		});
+		result.setRGB(0, 0, width, height, targetPixels, 0, width);
+		return result;
 	}
 
 	//去色

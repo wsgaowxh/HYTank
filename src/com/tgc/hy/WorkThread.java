@@ -2,6 +2,7 @@ package com.tgc.hy;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 
 public class WorkThread extends Thread{
 	private String pathOne = null;
@@ -20,6 +21,15 @@ public class WorkThread extends Thread{
 		super.run();
 		BufferedImage picA = Utils.setImageOne(pathOne);
 		BufferedImage picB = Utils.setImageTwo(pathTwo);
+		List<BufferedImage> targetList = Utils.setPicSize(picA, picB);
+		if (targetList.size() != 0) {
+			if (targetList.get(0) != null) {
+				picA = targetList.get(0);
+			}
+			if (targetList.get(1) != null) {
+				picB = targetList.get(1);
+			}
+		}
 		Utils.setGray(picA);
 		Utils.changeColorLevel(picA, true);
 		Utils.opposition(picA);
